@@ -35,7 +35,7 @@ app2.use('/stream/small/length', function(req, res){
 
 app2.use('/stream/large/length', function(req, res){
   res.setHeader('Content-Type', 'text/plain');
-  res.setHeader('Content-Length', '2048');
+  res.writeHead(200, {'Content-Length': '2048'});
   res.write(new Buffer(2048));
   res.end();
 });
@@ -174,7 +174,11 @@ describe('compress()', function(){
       request(app2)
       .get('/stream/large/length')
       .set('Accept-Encoding', 'gzip')
-      .expect('Content-Encoding', 'gzip', done);
+        .end(function(err, res){
+          res.headers.should.not.have.property('content-length');
+          assert.equal(res.headers['content-encoding'], 'gzip');
+          done()
+        });
     })
   })
 
